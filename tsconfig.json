@@ -1,7 +1,8 @@
 {
   "extends": "@fisch0920/config/tsconfig-react",
   "compilerOptions": {
-    "moduleResolution": "node",
+    "verbatimModuleSyntax": false,
+    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "@/components/*": ["components/*"],
