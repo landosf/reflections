@@ -31,5 +31,5 @@ export default {
   // },
 
   // See https://react-tweet.vercel.app/next#troubleshooting
-  transpilePackages: ['react-tweet']
+  transpilePackages: ['react-tweet', 'notion-utils', 'notion-types', 'react-notion-x']
 }
