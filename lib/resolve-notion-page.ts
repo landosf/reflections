@@ -1,5 +1,3 @@
-Almost right, but the function is defined after it’s called, and it’s nested inside resolveNotionPage. Move the function outside and above resolveNotionPage:
-
 import { type ExtendedRecordMap } from 'notion-types'
 import { parsePageId } from 'notion-utils'
 
