@@ -16,7 +16,7 @@ function sortRecordMapByPublishedDate(recordMap: ExtendedRecordMap): ExtendedRec
   const collectionEntry = collections[0]
 if (!collectionEntry) return recordMap
 
-const collection = 'value' in collectionEntry ? collectionEntry.value : collectionEntry
+const collection = ('value' in collectionEntry ? collectionEntry.value : collectionEntry) as any
 const schema = collection.schema
 
   const publishedKey = Object.keys(schema).find(
