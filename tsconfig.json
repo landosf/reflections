@@ -1,7 +1,7 @@
 {
   "extends": "@fisch0920/config/tsconfig-react",
   "compilerOptions": {
-    "moduleResolution": "bundler",
+    "moduleResolution": "node16",
     "baseUrl": ".",
     "paths": {
       "@/components/*": ["components/*"],
