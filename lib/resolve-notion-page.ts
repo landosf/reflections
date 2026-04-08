@@ -18,12 +18,13 @@ if (!collectionEntry) return recordMap
 
 const collection = ('value' in collectionEntry ? collectionEntry.value : collectionEntry) as any
 const schema = collection.schema
+if (!schema) return recordMap
 
-  const publishedKey = Object.keys(schema).find(
-    (k) => schema[k]?.name?.toLowerCase() === 'published'
-  )
+const publishedKey = Object.keys(schema).find(
+  (k) => schema[k]?.name?.toLowerCase() === 'published'
+)
 
-  if (!publishedKey) return recordMap
+if (!publishedKey) return recordMap
 
   const getDate = (block: any): number => {
     const prop = block?.value?.properties?.[publishedKey]
