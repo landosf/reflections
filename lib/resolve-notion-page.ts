@@ -10,45 +10,44 @@ import { getPage } from './notion'
 
 // Sort collection pages by Published date descending
 function sortRecordMapByPublishedDate(recordMap: ExtendedRecordMap): ExtendedRecordMap {
-  const collections = Object.values(recordMap.collection ?? {})
-  if (!collections.length) return recordMap
+  const collectionViews = Object.entries(recordMap.collection_view ?? {})
+  if (!collectionViews.length) return recordMap
 
-  const collectionEntry = collections[0]
-  if (!collectionEntry) return recordMap
-
-  const collection = ('value' in collectionEntry ? collectionEntry.value : collectionEntry) as any
-  const schema = collection.schema
-  if (!schema) return recordMap
-
-  const publishedKey = Object.keys(schema).find(
-    (k) => schema[k]?.name?.toLowerCase() === 'published'
-  )
-  if (!publishedKey) return recordMap
-
-  const getDate = (blockId: string): number => {
-    const block = (recordMap.block[blockId] as any)?.value
-    const prop = block?.properties?.[publishedKey]
-    const date = prop?.[0]?.[1]?.[0]?.[1]?.start_date
-    return date ? new Date(date).getTime() : 0
-  }
-
-  // Sort the collection_view page_sort arrays
   const sortedCollectionView = Object.fromEntries(
-    Object.entries(recordMap.collection_view ?? {}).map(([viewId, view]) => {
+    collectionViews.map(([viewId, view]) => {
       const v = view as any
-      const pageSort = v?.value?.page_sort ?? v?.page_sort
-      if (!pageSort) return [viewId, view]
+      const value = v?.value?.value ?? v?.value ?? v
 
-      const sortedPageSort = [...pageSort].sort((a, b) => getDate(b) - getDate(a))
+      const pageSort = value?.page_sort
+      const sortProperty = value?.query2?.sort?.[0]?.property
+      const direction = value?.query2?.sort?.[0]?.direction ?? 'descending'
 
-      const updatedView = {
+      if (!pageSort || !sortProperty) return [viewId, view]
+
+      const getDate = (blockId: string): number => {
+        const block = (recordMap.block[blockId] as any)?.value
+        const prop = block?.properties?.[sortProperty]
+        const date = prop?.[0]?.[1]?.[0]?.[1]?.start_date
+        if (date) return new Date(date).getTime()
+        return block?.created_time ?? 0
+      }
+
+      const sortedPageSort = [...pageSort].sort((a: string, b: string) => {
+        return direction === 'descending'
+          ? getDate(b) - getDate(a)
+          : getDate(a) - getDate(b)
+      })
+
+      return [viewId, {
         ...v,
         value: {
-          ...(v.value ?? v),
-          page_sort: sortedPageSort
+          ...v.value,
+          value: {
+            ...(v.value?.value ?? v.value),
+            page_sort: sortedPageSort
+          }
         }
-      }
-      return [viewId, updatedView]
+      }]
     })
   )
 
