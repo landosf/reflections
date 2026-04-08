@@ -14,31 +14,47 @@ function sortRecordMapByPublishedDate(recordMap: ExtendedRecordMap): ExtendedRec
   if (!collections.length) return recordMap
 
   const collectionEntry = collections[0]
-if (!collectionEntry) return recordMap
+  if (!collectionEntry) return recordMap
 
-const collection = ('value' in collectionEntry ? collectionEntry.value : collectionEntry) as any
-const schema = collection.schema
-if (!schema) return recordMap
+  const collection = ('value' in collectionEntry ? collectionEntry.value : collectionEntry) as any
+  const schema = collection.schema
+  if (!schema) return recordMap
 
-const publishedKey = Object.keys(schema).find(
-  (k) => schema[k]?.name?.toLowerCase() === 'published'
-)
+  const publishedKey = Object.keys(schema).find(
+    (k) => schema[k]?.name?.toLowerCase() === 'published'
+  )
+  if (!publishedKey) return recordMap
 
-if (!publishedKey) return recordMap
-
-  const getDate = (block: any): number => {
-    const prop = block?.value?.properties?.[publishedKey]
+  const getDate = (blockId: string): number => {
+    const block = (recordMap.block[blockId] as any)?.value
+    const prop = block?.properties?.[publishedKey]
     const date = prop?.[0]?.[1]?.[0]?.[1]?.start_date
     return date ? new Date(date).getTime() : 0
   }
 
-  const sortedBlockEntries = Object.entries(recordMap.block).sort(([, a], [, b]) => {
-    return getDate(b) - getDate(a)
-  })
+  // Sort the collection_view page_sort arrays
+  const sortedCollectionView = Object.fromEntries(
+    Object.entries(recordMap.collection_view ?? {}).map(([viewId, view]) => {
+      const v = view as any
+      const pageSort = v?.value?.page_sort ?? v?.page_sort
+      if (!pageSort) return [viewId, view]
+
+      const sortedPageSort = [...pageSort].sort((a, b) => getDate(b) - getDate(a))
+
+      const updatedView = {
+        ...v,
+        value: {
+          ...(v.value ?? v),
+          page_sort: sortedPageSort
+        }
+      }
+      return [viewId, updatedView]
+    })
+  )
 
   return {
     ...recordMap,
-    block: Object.fromEntries(sortedBlockEntries)
+    collection_view: sortedCollectionView
   }
 }
 
