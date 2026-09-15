@@ -3,14 +3,17 @@ import { NotionPage } from '@/components/NotionPage'
 import { domain } from '@/lib/config'
 import { resolveNotionPage } from '@/lib/resolve-notion-page'
 
-export const getServerSideProps = async () => {
+export const getStaticProps = async () => {
   try {
     const props = await resolveNotionPage(domain)
 
-    return { props }
+    return { props, revalidate:10 }
   } catch (err) {
     console.error('page error', domain, err)
-    throw err
+    // we don't want to publish the error version of this page, so
+// let next.js know explicitly that incremental SSG failed
+throw err
+
   }
 }
 
